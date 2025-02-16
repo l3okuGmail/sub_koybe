@@ -1,0 +1,11 @@
+version: v1
+name: sub-store-service
+spec:
+  source:
+    type: git
+    location: <your-git-repo-url>
+    branch: main
+  build:
+    dockerfile_path: ./Dockerfile
+  http:
+    port: 3001
