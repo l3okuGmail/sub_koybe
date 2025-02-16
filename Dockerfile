@@ -1,11 +1,13 @@
+# 基于 Alpine Linux 镜像构建
 FROM alpine
 
+# 设置工作目录
 WORKDIR /opt/app
 
 # 安装依赖：nodejs、curl、tzdata、supervisor、unzip
 RUN apk add --no-cache nodejs curl tzdata supervisor unzip
 
-# 设置时区
+# 设置时区为 Asia/Shanghai
 ENV TIME_ZONE=Asia/Shanghai
 RUN cp /usr/share/zoneinfo/$TIME_ZONE /etc/localtime && echo $TIME_ZONE > /etc/timezone
 
@@ -31,7 +33,7 @@ RUN version=$(curl -s -L --connect-timeout 5 --max-time 10 --retry 2 --retry-del
 # 修改文件权限，并创建数据目录
 RUN chmod 777 -R /opt/app && mkdir -p /opt/app/data
 
-# 创建 supervisord 配置文件，管理 http-meta 和 sub-store 两个进程
+# 创建 supervisord 配置文件，用于管理 http-meta 和 sub-store 两个进程
 RUN echo "[supervisord]
 nodaemon=true
 
@@ -50,8 +52,8 @@ autorestart=true
 environment=SUB_STORE_BACKEND_API_HOST=\"0.0.0.0\",SUB_STORE_FRONTEND_HOST=\"0.0.0.0\",SUB_STORE_FRONTEND_PORT=\"3001\",SUB_STORE_FRONTEND_PATH=\"/opt/app/frontend\",SUB_STORE_DATA_BASE_PATH=\"/opt/app/data\"
 " > /etc/supervisord.conf
 
-# 暴露服务端口
+# 暴露服务端口（这里使用 3001 作为前端访问端口）
 EXPOSE 3001
 
-# 使用 supervisord 启动所有服务
+# 启动 supervisord 来同时启动 http-meta 和 sub-store 两个服务
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
